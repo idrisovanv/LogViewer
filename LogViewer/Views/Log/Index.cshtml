@@ -1,0 +1,217 @@
+﻿@{
+    Layout = null;   
+
+}
+<!DOCTYPE html>
+
+<html ng-app>
+    <head>
+        <title>title</title>
+        <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/bootstrap.css")" />
+        <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/slider.css")" />
+        <script type="text/javascript" src="@Url.Content("~/Scripts/jquery-2.0.3.js")"></script>
+        <script type="text/javascript" src="@Url.Content("~/Scripts/jquery.signalR-2.0.0.js")"></script>
+        <script type="text/javascript" src="@Url.Content("~/Scripts/bootstrap.js")"></script>
+        <script type="text/javascript" src="@Url.Content("~/Scripts/bootstrap-slider.js")"></script>
+        <script type="text/javascript" src="@Url.Content("~/Scripts/log.js")"></script>
+        <script src="/signalr/hubs" type="text/javascript"></script>
+        <script src="@Url.Content("~/Angular/lib/angular/angular.js")"></script>
+        <script src="@Url.Content("~/Angular/js/controllers.js")"></script>
+        
+    </head>
+<body>
+    <div class="container" ng-controller="LogListCtrl">
+
+        <div class="navbar navbar-default" role="navigation">
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="#">Log4Net.SignalR</a>
+            </div>
+            <div class="collapse navbar-collapse">
+
+                <ul class="nav navbar-nav">
+
+                    <li class="dropdown btn-group">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">RabbitTest 
+                                    <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="test-ajax-link">@Html.ActionLink("Info", "LogInfo")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Debug", "LogDebug")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Warn", "LogWarn")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Error", "LogError")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Log Exception", "LogErrorException")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Throw Exception", "LogThrowException")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Rand", "Rand")</li>
+                            <li class="test-ajax-link">@Html.ActionLink("Auto", "Auto")</li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown btn-group">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">SignalTest 
+                                    <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class=""><a href="#" id="test-signalr">TestSignal</a></li>
+                            <li class=""><a href="#" id="test-signalr-group">TestSignalGroup</a></li>
+                        </ul>
+                    </li>                    
+                </ul>
+            </div>
+
+        </div>
+    
+
+    <style>
+        .log, .classFilter .panel-body label {
+        word-break:break-all;
+        }
+
+        .logsList .log, .logsList .logHead {
+            width: 100%;
+        }
+
+        .logsList .logHead {
+            cursor: pointer;
+            padding:10px;
+        }
+
+        .logsList .DEBUG .logHead {
+            background-color: #fcefdd;
+        }
+
+        .logsList .INFO .logHead {
+            background-color: #fffaf3;
+        }
+
+        .logsList .WARN .logHead {
+            background-color: #FEE9CC;
+        }
+
+        .logsList .ERROR .logHead {
+            background-color: #ffd3bc;
+        }
+        .logTools {
+            margin-right: 0;
+            margin-left: 0;
+            line-height: 34px;
+            padding: 5px;
+        }
+        .logTools .pull-left {
+        margin:5px;
+        }
+        .logTools .separ {
+        float:left;
+        height:34px;
+        width:2px;
+        background-color:#dddddd;
+        margin:5px 10px;
+        }
+            .logTools input[type=checkbox] {
+                margin-top:10px;
+            }
+        .classFilter .panel-heading a[data-toggle=collapse] {
+        padding:7px 0;
+        }
+        .classFilter .panel-heading a, .classFilter .panel-heading label {
+        margin:0 10px;
+        }
+        .classList {
+            width: 100%;
+            max-height: 300px;
+            float: left;
+            overflow: auto;
+            padding: 0 10px;
+        }
+    </style>
+
+        <div class="panel panel-default row logTools">
+            <div class="pull-left">
+                <a class="btn" ng-click="events=[]">Clear</a>
+
+                <a class="btn" ng-click="isStopped=!isStopped" ng-init="isStopped = false">
+                    <span class="glyphicon" ng-class="{false:'glyphicon-stop',true:'glyphicon-play'}[isStopped]"></span>
+                </a>
+            </div>
+            <div class="separ"></div>
+            <div class="pull-left">
+                <label class="checkbox-inline">
+                    <input type="checkbox" ng-model="level.info">
+                    Info
+                </label>
+
+                <label class="checkbox-inline">
+                    <input type="checkbox" ng-model="level.debug">
+                    Debug
+                </label>
+
+                <label class="checkbox-inline">
+                    <input type="checkbox" ng-model="level.warn">
+                    Warn
+                </label>
+
+                <label class="checkbox-inline">
+                    <input type="checkbox" ng-model="level.error">
+                    Error
+                </label>
+
+            </div>
+            <div class="separ"></div>
+            <div class="pull-left">
+                <label style="margin-right: 10px;min-width:155px;">Max logs count: {{slider}}</label>
+                <div class="slider horizontal-slider" data-slider-min="10" data-slider-max="10000" style="width: 170px;"></div>
+            </div>
+            <div class="separ"></div>
+            <input class="pull-left form-control" style="width: 300px;" ng-model="textFilter.$" placeholder="text filter" />
+
+        </div>
+        <div class="panel panel-default classFilter">
+        <div class="panel-heading">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" class="pull-left">Class filter</a>
+            <label class="checkbox-inline">
+                <input type="checkbox" ng-model="addEventFromNewClasses" />
+                Add event from new classes
+            </label>
+            <a class="btn" ng-click="checkAll(true)">Check all</a>
+            <a class="btn" ng-click="checkAll(false)">Uncheck all</a>    
+            
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div class="classList">
+                    <div class="checkbox" ng-repeat="(name,value) in locations ">
+                        <label>
+                            <input type="checkbox" ng-model="value.show" />
+                            ({{value.count}})
+                            {{name}}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1>Log</h1>
+
+
+    <div class="logsList">
+        <div ng-repeat="event in events | filter:textFilter:strict" class="{{event.Level.Name}} log">
+            <div ng-click="event.showDetails = !event.showDetails" class="logHead">
+                <table>
+                    <tr>
+                        <td style="width: 300px;">{{event.TimeStamp}}</td>
+                        <td style="width: 100px;">{{event.Level.Name}}</td>
+                        <td>{{event.Message}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div ng-if="event.showDetails">
+                <pre style="border:none;background-color:inherit;">{{event.LocationInfo.FullInfo}}
+{{event.ExceptionString || ''}}</pre>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</body>
+</html>
